@@ -1,0 +1,39 @@
+# === Ambientes virtuais ===
+.venv/
+
+# === Variáveis de ambiente ===
+.env
+
+# === Cache do Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# === Logs ===
+*.log
+
+# === Configurações de IDE ===
+.vscode/
+.idea/
+
+# === Arquivos do sistema operacional ===
+.DS_Store
+Thumbs.db
+
+# === Cache e relatórios de testes (se usar no futuro) ===
+.coverage
+.cache/
+.pytest_cache/
+htmlcov/
+
+# === Build / distribuição (se empacotar no futuro) ===
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# === Outras ferramentas comuns ===
+.mypy_cache/
+.pyre/
+.pytype/
