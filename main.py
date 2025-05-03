@@ -1,7 +1,10 @@
 import telebot;
 from telebot import types;
+from utils.config import get_telegram_api_key;
 
-bot = telebot.TeleBot('');
+telegram_api_key = get_telegram_api_key();
+
+bot = telebot.TeleBot(telegram_api_key);
 
 dados_usuario = {}
 
