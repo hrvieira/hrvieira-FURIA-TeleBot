@@ -1,7 +1,7 @@
 import telebot;
 from telebot import types;
 
-bot = telebot.TeleBot('7729765752:AAEi3Wau4z8gDLgK7LLhbgTG_-lfGKCbcfU');
+bot = telebot.TeleBot('');
 
 dados_usuario = {}
 
