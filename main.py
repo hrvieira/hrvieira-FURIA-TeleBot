@@ -1,18 +1,15 @@
 import telebot;
 from telebot import types;
 from utils.config import get_telegram_api_key;
+from utils.validators import validar_nome, validar_email, validar_cpf;
 
 telegram_api_key = get_telegram_api_key();
-
 bot = telebot.TeleBot(telegram_api_key);
 
 dados_usuario = {}
 
 @bot.message_handler(commands=['start'])
 def start(msg: telebot.types.Message):
-    """
-    Função para lidar com o comando /start. Apresenta o bot e os termos de uso.
-    """
     markup = types.InlineKeyboardMarkup()
     btn_aceito_termos = types.InlineKeyboardButton(text="Aceito", callback_data="aceito_termos")
     btn_recusar_termos = types.InlineKeyboardButton(text="Não aceito", callback_data="recusar_termos")
@@ -44,22 +41,25 @@ def termos_furia(call: types.CallbackQuery):
         bot.send_message(call.message.chat.id, "🚨 Que pena! Se mudar de ideia, é só chamar a gente aqui! 🖤🔥")
 
 def nome_usuario(msg: telebot.types.Message):
-    """
-    Função para obter e confirmar o nome do usuário.
-    """
-    nome = msg.text
-    dados_usuario['nome'] = nome #armazena o nome
+    nome = msg.text.strip()
+    if not validar_nome(nome):
+        bot.send_message(msg.chat.id, "❌ Nome inválido. Informe seu nome completo (pelo menos nome e sobrenome).")
+        bot.register_next_step_handler(msg, nome_usuario)
+        return
+
+    dados_usuario['nome'] = nome
+    
     markup = types.InlineKeyboardMarkup()
+    
     btn_confirmar_nome = types.InlineKeyboardButton(text="Confirmar nome", callback_data="confirmar_nome")
     btn_alterar_nome = types.InlineKeyboardButton(text="Alterar nome", callback_data="alterar_nome")
+    
     markup.add(btn_confirmar_nome, btn_alterar_nome)
+    
     bot.send_message(msg.chat.id, f"Podemos confirmar a sua informação: {nome}?", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["confirmar_nome", "alterar_nome"])
 def tratar_nome(call: types.CallbackQuery):
-    """
-    Função para tratar a confirmação ou alteração do nome do usuário.
-    """
     if call.data == "confirmar_nome":
         bot.send_message(call.message.chat.id, "E qual é o seu email?")
         bot.register_next_step_handler(call.message, email_usuario)
@@ -68,11 +68,13 @@ def tratar_nome(call: types.CallbackQuery):
         bot.register_next_step_handler(call.message, nome_usuario)
 
 def email_usuario(msg: telebot.types.Message):
-    """
-    Função para obter e confirmar o email do usuário.
-    """
-    email = msg.text
-    dados_usuario['email'] = email #armazena o email
+    email = msg.text.strip()
+    if not validar_email(email):
+        bot.send_message(msg.chat.id, "❌ Email inválido. Por favor, informe um email válido (exemplo: nome@email.com).")
+        bot.register_next_step_handler(msg, email_usuario)
+        return
+
+    dados_usuario['email'] = email
     markup = types.InlineKeyboardMarkup()
     btn_confirmar_email = types.InlineKeyboardButton(text="Confirmar email", callback_data="confirmar_email")
     btn_alterar_email = types.InlineKeyboardButton(text="Alterar email", callback_data="alterar_email")
@@ -81,9 +83,6 @@ def email_usuario(msg: telebot.types.Message):
 
 @bot.callback_query_handler(func=lambda call: call.data in ["confirmar_email", "alterar_email"])
 def tratar_email(call: types.CallbackQuery):
-    """
-    Função para tratar a confirmação ou alteração do email do usuário.
-    """
     if call.data == "confirmar_email":
         bot.send_message(call.message.chat.id, "Opcional: Quer inserir seu CPF e ganhar recompensas 🎁 e prestígio 🏆 na nossa comunidade? (uso exclusivo para isso).")
         bot.register_next_step_handler(call.message, cpf_usuario)
@@ -92,11 +91,13 @@ def tratar_email(call: types.CallbackQuery):
         bot.register_next_step_handler(call.message, email_usuario)
 
 def cpf_usuario(msg: telebot.types.Message):
-    """
-    Função para obter e confirmar o CPF do usuário.
-    """
-    cpf = msg.text
-    dados_usuario['cpf'] = cpf #armazena o cpf
+    cpf = msg.text.strip()
+    if not validar_cpf(cpf):
+        bot.send_message(msg.chat.id, "❌ CPF inválido. Informe um CPF com 11 dígitos (apenas números ou com pontos e traço).")
+        bot.register_next_step_handler(msg, cpf_usuario)
+        return
+
+    dados_usuario['cpf'] = cpf
     markup = types.InlineKeyboardMarkup()
     btn_confirmar_cpf = types.InlineKeyboardButton(text="Confirmar CPF", callback_data="confirmar_cpf")
     btn_alterar_cpf = types.InlineKeyboardButton(text="Alterar CPF", callback_data="alterar_cpf")
@@ -105,18 +106,14 @@ def cpf_usuario(msg: telebot.types.Message):
 
 @bot.callback_query_handler(func=lambda call: call.data in ["confirmar_cpf", "alterar_cpf"])
 def tratar_cpf(call: types.CallbackQuery):
-    """
-    Função para tratar a confirmação ou alteração do CPF do usuário.
-    """
     if call.data == "confirmar_cpf":
-        # Agora que temos os dados do usuário, podemos usar um dicionário
         nome = dados_usuario.get('nome', 'Nome não encontrado')
         email = dados_usuario.get('email', 'Email não encontrado')
         cpf = dados_usuario.get('cpf', 'CPF não encontrado')
 
         alerta_bot = ("⚠️ Esse contato inteligente está na versão beta e pode conter bugs e informações imprecisas. ⚠️")
         mensagem_final = (
-            f"E aí, FUR {nome} 🇧🇷\n"  # Usa o nome armazenado
+            f"E aí, FUR {nome} 🇧🇷\n"
             "Seu saldo é de $0,99 FURIA Cash.\n\n"
             "⚡ Acompanhe jogos ao vivo\n\n"
             "🎯 Campeonato de Clipadores\n\n"
@@ -129,7 +126,7 @@ def tratar_cpf(call: types.CallbackQuery):
         )
         bot.send_message(call.message.chat.id, alerta_bot)
         bot.send_message(call.message.chat.id, mensagem_final)
-        menu(call.message) #chama o menu
+        menu(call.message)
     elif call.data == "alterar_cpf":
         bot.send_message(call.message.chat.id, "Qual o seu CPF?")
         bot.register_next_step_handler(call.message, cpf_usuario)
@@ -163,9 +160,6 @@ def menu(msg: telebot.types.Message):
     "FURIA Cash"
 ])
 def opcoes_menu(msg: telebot.types.Message):
-    """
-    Função para lidar com as opções escolhidas no menu principal.
-    """
     opcoes = {
         "Acompanhe jogos ao vivo": "Aqui você pode acompanhar os jogos ao vivo da FURIA!",
         "Campeonato de Clipadores": "Aqui você pode acompanhar o campeonato de clipadores!",
@@ -175,7 +169,6 @@ def opcoes_menu(msg: telebot.types.Message):
         "Criadores de Conteúdo e Streamers": "Aqui você pode acompanhar os criadores de conteúdo e streamers da FURIA!",
         "FURIA Cash": "Aqui você pode acompanhar seu saldo de FURIA Cash!"
     }
-    # Busca a resposta no dicionário, se não encontrar, retorna uma mensagem padrão
     resposta = opcoes.get(msg.text, "Opção não reconhecida.")
     bot.send_message(msg.chat.id, resposta)
 
