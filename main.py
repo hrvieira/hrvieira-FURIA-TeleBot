@@ -132,9 +132,7 @@ def tratar_cpf(call: types.CallbackQuery):
         bot.register_next_step_handler(call.message, cpf_usuario)
 
 def menu(msg: telebot.types.Message):
-    """
-    Função para exibir o menu principal do bot.
-    """
+
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True, one_time_keyboard=True)
     btn_acompanhe_jogos = types.KeyboardButton(text="Acompanhe jogos ao vivo")
     btn_campeonato_clipadores = types.KeyboardButton(text="Campeonato de Clipadores")
@@ -171,5 +169,14 @@ def opcoes_menu(msg: telebot.types.Message):
     }
     resposta = opcoes.get(msg.text, "Opção não reconhecida.")
     bot.send_message(msg.chat.id, resposta)
+    
+@bot.message_handler(func=lambda msg: True)
+def mensagem_nao_reconhecida(msg: telebot.types.Message):
+    mensagem = (
+        "🤔 FUR, acho que não escolheu uma de nossas opções...\n\n"
+        "👉 Por favor, escolha uma opção no menu abaixo para continuar:"
+    )
+    
+    bot.send_message(msg.chat.id, mensagem)
 
 bot.infinity_polling();
