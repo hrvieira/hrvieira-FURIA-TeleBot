@@ -35,6 +35,20 @@ async def aceitar_termos(telegram_id):
         WHERE telegram_id = $1;
     ''', telegram_id)
     await conn.close()
+    
+async def usuario_ja_cadastrado(telegram_id):
+    conn = await get_db_connection()
+    resultado = await conn.fetchrow('''
+        SELECT aceitou_termos
+        FROM usuarios
+        WHERE telegram_id = $1;
+    ''', telegram_id)
+    await conn.close()
+
+    if resultado and resultado['aceitou_termos']:
+        return True
+    else:
+        return False
 
 async def atualizar_dados_usuario(telegram_id, nome, email, cpf):
     cpf_limpo = ''.join(filter(str.isdigit, cpf))

@@ -3,7 +3,7 @@ from telegram.ext import ConversationHandler, CallbackQueryHandler, MessageHandl
 from bot.keyboards.onboarding_keyboard import termos_keyboard, confirmacao_keyboard
 from bot.utils.validators import validar_nome, validar_email, validar_cpf
 from bot.handlers.menu import enviar_menu
-from bot.database import cadastrar_usuario, aceitar_termos, atualizar_dados_usuario, verificar_e_atualizar_saldo_furiacash, obter_saldo_furiacash
+from bot.database import cadastrar_usuario, aceitar_termos, usuario_ja_cadastrado, atualizar_dados_usuario, verificar_e_atualizar_saldo_furiacash, obter_saldo_furiacash
 from datetime import date
 
 TERMO, NOME, CONF_NOME, EMAIL, CONF_EMAIL, CPF, CONF_CPF, FINAL = range(8)
@@ -17,6 +17,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = user.username
 
     await cadastrar_usuario(telegram_id, nome, username)
+    
+    if await usuario_ja_cadastrado(telegram_id):
+        await update.message.reply_text("🐾 Você já está cadastrado! Vamos direto ao menu. 👇")
+        await enviar_menu(update, context)
+        return ConversationHandler.END
     
     mensagem_inicial = (
         "🐾 Fala, guerreiro(a)! Aqui é o contato inteligente da FURIA!\n\n"
